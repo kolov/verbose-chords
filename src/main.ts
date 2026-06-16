@@ -114,6 +114,20 @@ const OPEN_STRINGS: OpenString[] = [
 
 const DISPLAY_STRING_ORDER = [5, 4, 3, 2, 1, 0];
 const STRUM_STRING_ORDER = [0, 1, 2, 3, 4, 5];
+const CHROMATIC_INTERVAL_MAP = [
+  { semitone: 0, label: "1" },
+  { semitone: 1, label: "b2" },
+  { semitone: 2, label: "2" },
+  { semitone: 3, label: "b3" },
+  { semitone: 4, label: "3" },
+  { semitone: 5, label: "4" },
+  { semitone: 6, label: "b5" },
+  { semitone: 7, label: "5" },
+  { semitone: 8, label: "b6" },
+  { semitone: 9, label: "6" },
+  { semitone: 10, label: "b7" },
+  { semitone: 11, label: "7" },
+];
 
 const QUALITIES: Record<QualityKey, ChordQuality> = {
   major: {
@@ -578,6 +592,24 @@ function renderSummary(parsed: ParsedChord, notes: Array<FormulaTone & { name: s
         <span>Major scale positions</span>
         <strong>${parsed.quality.formula.map((tone) => intervalLabelForDefinition(tone)).join(" ")}</strong>
       </div>
+      <div class="interval-map">
+        <p class="definition-label">Chromatic map</p>
+        <div class="interval-map-grid">
+          ${CHROMATIC_INTERVAL_MAP.map((interval) => renderIntervalMapToken(parsed, interval)).join("")}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderIntervalMapToken(parsed: ParsedChord, interval: { semitone: number; label: string }): string {
+  const chordTone = parsed.quality.formula.find((tone) => tone.semitone === interval.semitone);
+  const activeClass = chordTone ? ` is-active tone-${chordTone.role}` : "";
+
+  return `
+    <div class="interval-map-token${activeClass}">
+      <span>${interval.semitone}</span>
+      <strong>${escapeHtml(interval.label)}</strong>
     </div>
   `;
 }

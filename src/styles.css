@@ -328,6 +328,60 @@ h1 {
   white-space: nowrap;
 }
 
+.interval-map {
+  display: grid;
+  gap: 6px;
+  padding: 8px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: #ffffff;
+}
+
+.definition-label {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 850;
+  line-height: 1.15;
+}
+
+.interval-map-grid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 4px;
+}
+
+.interval-map-token {
+  display: grid;
+  place-items: center;
+  min-height: 36px;
+  padding: 4px 2px;
+  border: 1px solid #e4ded1;
+  border-radius: 6px;
+  background: #fbfaf6;
+  color: #76848d;
+}
+
+.interval-map-token.is-active {
+  border-color: currentColor;
+  background: #ffffff;
+}
+
+.interval-map-token span {
+  color: currentColor;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.62rem;
+  font-weight: 850;
+  line-height: 1;
+}
+
+.interval-map-token strong {
+  color: var(--ink);
+  font-size: 0.76rem;
+  font-weight: 900;
+  line-height: 1.1;
+}
+
 .tone-root {
   color: var(--root);
 }
