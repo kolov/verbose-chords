@@ -61,6 +61,7 @@ interface AnnotatedString {
   fret: number | null;
   noteName: string | null;
   interval: string | null;
+  semitoneFromRoot: number | null;
   role: ToneRole;
 }
 
@@ -950,6 +951,8 @@ function renderShapeCategory(parsed: ParsedChord, shape: ChordShape): string {
 }
 
 function annotateShape(parsed: ParsedChord, shape: ChordShape): AnnotatedString[] {
+  const referenceRootMidi = referenceRootMidiForShape(parsed, shape.frets);
+
   return shape.frets.map((fret, stringIndex) => {
     if (fret === null) {
       return {
@@ -957,11 +960,13 @@ function annotateShape(parsed: ParsedChord, shape: ChordShape): AnnotatedString[
         fret,
         noteName: null,
         interval: null,
+        semitoneFromRoot: null,
         role: "other",
       };
     }
 
     const pc = (OPEN_STRINGS[stringIndex].pc + fret) % 12;
+    const midi = OPEN_STRINGS[stringIndex].midi + fret;
     const tone = toneForPc(parsed, pc);
 
     return {
@@ -969,9 +974,27 @@ function annotateShape(parsed: ParsedChord, shape: ChordShape): AnnotatedString[
       fret,
       noteName: tone ? spellChordTone(parsed, tone) : noteName(pc, parsed.preferFlats),
       interval: tone?.label ?? "?",
+      semitoneFromRoot: referenceRootMidi === null ? null : midi - referenceRootMidi,
       role: tone?.role ?? "other",
     };
   });
+}
+
+function referenceRootMidiForShape(parsed: ParsedChord, frets: Array<number | null>): number | null {
+  const soundingMidis = frets
+    .map((fret, stringIndex) => (fret === null ? null : OPEN_STRINGS[stringIndex].midi + fret))
+    .filter((midi): midi is number => midi !== null);
+
+  if (soundingMidis.length === 0) {
+    return null;
+  }
+
+  const lowestMidi = Math.min(...soundingMidis);
+  return lowestMidi - ((midiPc(lowestMidi) - parsed.rootPc + 12) % 12);
+}
+
+function midiPc(midi: number): number {
+  return ((midi % 12) + 12) % 12;
 }
 
 function toneForPc(parsed: ParsedChord, pc: number): FormulaTone | null {
@@ -1038,8 +1061,19 @@ function renderDiagramSvg(
         ),
       )
         .join("")}
+      ${DISPLAY_STRING_ORDER.map((stringIndex, displayIndex) =>
+        renderSemitoneDistanceLabel(annotated[stringIndex], right + 12, stringYs[displayIndex]),
+      ).join("")}
     </svg>
   `;
+}
+
+function renderSemitoneDistanceLabel(annotation: AnnotatedString, x: number, y: number): string {
+  if (annotation.semitoneFromRoot === null) {
+    return "";
+  }
+
+  return `<text class="semitone-distance marker-${annotation.role}" x="${x}" y="${y + 5}">${annotation.semitoneFromRoot}</text>`;
 }
 
 function renderStringMarker(
